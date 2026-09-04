@@ -139,7 +139,7 @@ def clean_ai_text(text: str) -> str:
 def _ask_groq(
     prompt: str,
     system_prompt: str = None,
-    max_tokens: int = 700,
+    max_tokens: int = 1400,
 ) -> str:
 
     if not GROQ_AVAILABLE:
@@ -180,7 +180,8 @@ def _ask_groq(
 
             temperature=0.1,
 
-            max_tokens=max_tokens,
+            max_completion_tokens=max_tokens,
+            include_reasoning=False,
 
         )
 
@@ -350,7 +351,7 @@ Do not invent information.
 
         prompt,
 
-        max_tokens=700,
+        max_tokens=1400,
 
     )
 
@@ -465,7 +466,7 @@ Make the result professional, concise and ready for human approval.
 
         prompt,
 
-        max_tokens=800,
+        max_tokens=1600,
 
     )
 
@@ -516,7 +517,7 @@ Do not use bullet symbols.
 
         prompt,
 
-        max_tokens=180,
+        max_tokens=250,
 
     )
 
@@ -558,7 +559,8 @@ def test_groq_connection():
 
             temperature=0,
 
-            max_tokens=30,
+            max_completion_tokens=30,
+            include_reasoning=False,
 
         )
 
@@ -588,4 +590,3 @@ def test_groq_connection():
             "model": PRIMARY_MODEL,
 
         }
-
