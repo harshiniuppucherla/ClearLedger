@@ -45,6 +45,7 @@ Handles AI-assisted exception investigation and evidence-backed dispute draft ge
 * Python
 * Streamlit
 * Pandas
+* Numpy
 * Altair
 * OpenPyXL
 * AI-assisted financial analysis
