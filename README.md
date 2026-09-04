@@ -54,7 +54,7 @@ Handles AI-assisted exception investigation and evidence-backed dispute draft ge
 Clone the repository:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/ClearLedger.git
+git clone https://github.com/harshiniuppucherla/ClearLedger
 cd ClearLedger
 ```
 
