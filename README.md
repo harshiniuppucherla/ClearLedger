@@ -746,3 +746,23 @@ Built for the **Razorpay AI Buildathon — Track 04: AI Finance Controller**.
 ClearLedger is an experimental AI-assisted finance-operations MVP created for demonstration and buildathon purposes.
 
 It is not financial, accounting, legal, or compliance advice and should not be used as a production financial-control system without appropriate validation, security controls, human oversight, and compliance review.
+
+## Dashboard
+
+![ClearLedger Dashboard](images/dashboard.png)
+
+## Upload & Close
+
+![Upload & Close](images/upload & close.png)
+
+## Exceptions
+
+![Exceptions](images/exceptions.png)
+
+## AI Investigation
+
+![AI Investigation](images/ai-investigation.png)
+
+## Dispute and Audit
+
+![Dispute Evidence Builder and Audit report](images/disputes and audit.png)
