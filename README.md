@@ -761,7 +761,7 @@ It is not financial, accounting, legal, or compliance advice and should not be u
 
 ## AI Investigation
 
-![AI Investigation](images/ai-investigation.png)
+![AI Investigation](images/ai_investigation.png)
 
 ## Dispute and Audit
 
