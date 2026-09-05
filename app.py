@@ -277,6 +277,11 @@ DEFAULTS = {
     "reviewed_disputes": [],
     "hold_disputes": [],
     "audit_reports": [],
+    "upload_validation": {
+        "razorpay": False,
+        "bank": False,
+        "ledger": False,
+    },
 }
 
 
@@ -295,6 +300,12 @@ def clear_financial_data():
     st.session_state.audit_df = None
     st.session_state.last_run = None
 
+    st.session_state.upload_validation = {
+        "razorpay": False,
+        "bank": False,
+        "ledger": False,
+    }
+
     # Remove all Demo Data audit reports when Demo Data is disabled.
     # Uploaded-data audit reports are preserved.
     st.session_state.audit_reports = [
@@ -310,6 +321,12 @@ def load_demo_data():
         st.session_state.bank_df,
         st.session_state.ledger_df,
     ) = generate_demo_data()
+
+    st.session_state.upload_validation = {
+        "razorpay": True,
+        "bank": True,
+        "ledger": True,
+    }
 
     st.session_state.results = None
     st.session_state.investigations = {}
@@ -385,6 +402,18 @@ def data_available():
         st.session_state.razorpay_df is not None
         and st.session_state.bank_df is not None
         and st.session_state.ledger_df is not None
+        and st.session_state.upload_validation.get(
+            "razorpay",
+            False,
+        )
+        and st.session_state.upload_validation.get(
+            "bank",
+            False,
+        )
+        and st.session_state.upload_validation.get(
+            "ledger",
+            False,
+        )
     )
 
 
@@ -941,7 +970,7 @@ elif page == "Upload & Close":
 
             razorpay_file = st.file_uploader(
                 "Razorpay Settlement File",
-                type=["csv","pdf", "xlsx", "xls"],
+                type=["csv", "pdf", "xlsx", "xls"],
                 key="razorpay_upload",
             )
 
@@ -962,14 +991,36 @@ elif page == "Upload & Close":
 
                     if missing:
 
+                        st.session_state.razorpay_df = None
+                        st.session_state.upload_validation[
+                            "razorpay"
+                        ] = False
+
                         st.error(
-                            "Razorpay is missing required columns: "
+                            "Razorpay file is missing required information: "
                             + ", ".join(missing)
+                            + ". Please check the file and upload it again."
+                        )
+
+                    elif normalized.empty:
+
+                        st.session_state.razorpay_df = None
+                        st.session_state.upload_validation[
+                            "razorpay"
+                        ] = False
+
+                        st.error(
+                            "Razorpay file contains no usable financial records. "
+                            "Please check the file and upload it again."
                         )
 
                     else:
 
                         st.session_state.razorpay_df = normalized
+
+                        st.session_state.upload_validation[
+                            "razorpay"
+                        ] = True
 
                         record_uploaded_file(
                             "razorpay",
@@ -989,15 +1040,22 @@ elif page == "Upload & Close":
 
                 except Exception as e:
 
+                    st.session_state.razorpay_df = None
+                    st.session_state.upload_validation[
+                        "razorpay"
+                    ] = False
+
                     st.error(
-                        f"Unable to read Razorpay file: {e}"
+                        "Razorpay file could not be validated. "
+                        "Please check the file and upload it again. "
+                        f"Details: {e}"
                     )
 
         with c2:
 
             bank_file = st.file_uploader(
                 "Bank Statement File",
-                type=["csv","pdf", "xlsx", "xls"],
+                type=["csv", "pdf", "xlsx", "xls"],
                 key="bank_upload",
             )
 
@@ -1018,14 +1076,36 @@ elif page == "Upload & Close":
 
                     if missing:
 
+                        st.session_state.bank_df = None
+                        st.session_state.upload_validation[
+                            "bank"
+                        ] = False
+
                         st.error(
-                            "Bank statement is missing required columns: "
+                            "Bank statement is missing required information: "
                             + ", ".join(missing)
+                            + ". Please check the file and upload it again."
+                        )
+
+                    elif normalized.empty:
+
+                        st.session_state.bank_df = None
+                        st.session_state.upload_validation[
+                            "bank"
+                        ] = False
+
+                        st.error(
+                            "Bank statement contains no usable financial records. "
+                            "Please check the file and upload it again."
                         )
 
                     else:
 
                         st.session_state.bank_df = normalized
+
+                        st.session_state.upload_validation[
+                            "bank"
+                        ] = True
 
                         record_uploaded_file(
                             "bank",
@@ -1045,15 +1125,22 @@ elif page == "Upload & Close":
 
                 except Exception as e:
 
+                    st.session_state.bank_df = None
+                    st.session_state.upload_validation[
+                        "bank"
+                    ] = False
+
                     st.error(
-                        f"Unable to read bank statement: {e}"
+                        "Bank statement could not be validated. "
+                        "Please check the file and upload it again. "
+                        f"Details: {e}"
                     )
 
         with c3:
 
             ledger_file = st.file_uploader(
                 "Merchant Ledger File",
-                type=["csv","pdf", "xlsx", "xls"],
+                type=["csv", "pdf", "xlsx", "xls"],
                 key="ledger_upload",
             )
 
@@ -1074,14 +1161,36 @@ elif page == "Upload & Close":
 
                     if missing:
 
+                        st.session_state.ledger_df = None
+                        st.session_state.upload_validation[
+                            "ledger"
+                        ] = False
+
                         st.error(
-                            "Ledger is missing required columns: "
+                            "Ledger is missing required information: "
                             + ", ".join(missing)
+                            + ". Please check the file and upload it again."
+                        )
+
+                    elif normalized.empty:
+
+                        st.session_state.ledger_df = None
+                        st.session_state.upload_validation[
+                            "ledger"
+                        ] = False
+
+                        st.error(
+                            "Ledger contains no usable financial records. "
+                            "Please check the file and upload it again."
                         )
 
                     else:
 
                         st.session_state.ledger_df = normalized
+
+                        st.session_state.upload_validation[
+                            "ledger"
+                        ] = True
 
                         record_uploaded_file(
                             "ledger",
@@ -1101,24 +1210,68 @@ elif page == "Upload & Close":
 
                 except Exception as e:
 
+                    st.session_state.ledger_df = None
+                    st.session_state.upload_validation[
+                        "ledger"
+                    ] = False
+
                     st.error(
-                        f"Unable to read ledger file: {e}"
+                        "Ledger could not be validated. "
+                        "Please check the file and upload it again. "
+                        f"Details: {e}"
                     )
 
     st.markdown("---")
 
     st.subheader("Execute Financial Close")
 
-    if not data_available():
+    if st.session_state.demo_enabled:
 
-        st.warning(
-            "All three sources are required before the financial close can run."
+        st.success(
+            "All three demo financial sources are ready."
         )
+
+    elif not data_available():
+
+        invalid_sources = []
+
+        if not st.session_state.upload_validation.get(
+            "razorpay",
+            False,
+        ):
+            invalid_sources.append("Razorpay")
+
+        if not st.session_state.upload_validation.get(
+            "bank",
+            False,
+        ):
+            invalid_sources.append("Bank")
+
+        if not st.session_state.upload_validation.get(
+            "ledger",
+            False,
+        ):
+            invalid_sources.append("Ledger")
+
+        if invalid_sources:
+
+            st.warning(
+                "Financial close is blocked. "
+                "Please check and re-upload the following source(s): "
+                + ", ".join(invalid_sources)
+                + "."
+            )
+
+        else:
+
+            st.warning(
+                "All three sources are required before the financial close can run."
+            )
 
     else:
 
         st.success(
-            "All three financial sources are ready."
+            "All three financial sources are validated and ready."
         )
 
     if st.button(
@@ -1128,70 +1281,80 @@ elif page == "Upload & Close":
         disabled=not data_available(),
     ):
 
-        with st.spinner(
-            "Running reconciliation and generating the audit trail..."
-        ):
+        if not data_available():
 
-            try:
+            st.error(
+                "Financial close was not executed because one or more uploaded "
+                "files are incomplete or invalid. Please check the files and "
+                "upload them again."
+            )
 
-                results = run_reconciliation(
-                    st.session_state.razorpay_df,
-                    st.session_state.bank_df,
-                    st.session_state.ledger_df,
-                )
+        else:
 
-                close_time = datetime.now().strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                )
+            with st.spinner(
+                "Running reconciliation and generating the audit trail..."
+            ):
 
-                audit_df = build_audit_report(
-                    results
-                )
+                try:
 
-                st.session_state.results = results
+                    results = run_reconciliation(
+                        st.session_state.razorpay_df,
+                        st.session_state.bank_df,
+                        st.session_state.ledger_df,
+                    )
 
-                st.session_state.audit_df = audit_df
+                    close_time = datetime.now().strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    )
 
-                st.session_state.last_run = close_time
+                    audit_df = build_audit_report(
+                        results
+                    )
 
-                # Store the audit with an explicit data source.
-                #
-                # Demo Data:
-                #   Store it as "demo" so that only demo audits are shown
-                #   while Demo Data is enabled.
-                #
-                # Uploaded Data:
-                #   Store it as "uploaded" so that only uploaded audits are
-                #   shown when Demo Data is disabled.
-                audit_source = (
-                    "demo"
-                    if st.session_state.demo_enabled
-                    else "uploaded"
-                )
+                    st.session_state.results = results
 
-                st.session_state.audit_reports.append(
-                    {
-                        "close_time": close_time,
-                        "audit_df": audit_df.copy(),
-                        "data_source": audit_source,
-                    }
-                )
+                    st.session_state.audit_df = audit_df
 
-                st.session_state.investigations = {}
-                st.session_state.dispute_drafts = {}
+                    st.session_state.last_run = close_time
 
-                st.success(
-                    "Financial close completed successfully."
-                )
+                    # Store the audit with an explicit data source.
+                    #
+                    # Demo Data:
+                    #   Store it as "demo" so that only demo audits are shown
+                    #   while Demo Data is enabled.
+                    #
+                    # Uploaded Data:
+                    #   Store it as "uploaded" so that only uploaded audits are
+                    #   shown when Demo Data is disabled.
+                    audit_source = (
+                        "demo"
+                        if st.session_state.demo_enabled
+                        else "uploaded"
+                    )
 
-                st.rerun()
+                    st.session_state.audit_reports.append(
+                        {
+                            "close_time": close_time,
+                            "audit_df": audit_df.copy(),
+                            "data_source": audit_source,
+                        }
+                    )
 
-            except Exception as e:
+                    st.session_state.investigations = {}
+                    st.session_state.dispute_drafts = {}
 
-                st.error(
-                    "Financial close failed safely. "
-                    f"No financial result was saved. Details: {e}"
-                )
+                    st.success(
+                        "Financial close completed successfully."
+                    )
+
+                    st.rerun()
+
+                except Exception as e:
+
+                    st.error(
+                        "Financial close failed safely. "
+                        f"No financial result was saved. Details: {e}"
+                    )
 
 
 elif page == "Exceptions":
@@ -1635,8 +1798,6 @@ elif page == "Disputes & Audits":
                         selected_case
                     ]
 
-                    # Display the complete message.
-                    # No height restriction or truncation is applied.
                     st.markdown(
                         f"""
                         <div class="dispute-card">
@@ -1679,8 +1840,6 @@ elif page == "Disputes & Audits":
                                 "Message": editable_message,
                             }
 
-                            # Keep only the latest state/version.
-                            # If the case was previously held, remove it from Hold.
                             st.session_state.reviewed_disputes = [
                                 record
                                 for record in st.session_state.reviewed_disputes
@@ -1720,8 +1879,6 @@ elif page == "Disputes & Audits":
                                 "Message": editable_message,
                             }
 
-                            # Keep only the latest state/version.
-                            # If the case was previously reviewed, remove it from Reviewed.
                             st.session_state.hold_disputes = [
                                 record
                                 for record in st.session_state.hold_disputes
@@ -1852,7 +2009,6 @@ elif page == "Disputes & Audits":
 
             st.subheader("Financial Close Audit History")
 
-            # Explicitly show which environment is being displayed.
             if st.session_state.demo_enabled:
 
                 st.caption(
@@ -1865,14 +2021,12 @@ elif page == "Disputes & Audits":
                     "Showing uploaded financial-data audit reports only."
                 )
 
-            # Search historical audit reports by financial close date.
             audit_search_date = st.date_input(
                 "Search Audit by Date",
                 value=None,
                 key="audit_search_date",
             )
 
-            # Start from ONLY the currently selected data source.
             filtered_audit_reports = visible_audit_reports
 
             if audit_search_date is not None:
@@ -1889,7 +2043,6 @@ elif page == "Disputes & Audits":
                     )
                 ]
 
-            # Show all matching historical audit reports, newest first.
             if not filtered_audit_reports:
 
                 if audit_search_date is not None:
@@ -2000,9 +2153,6 @@ elif page == "Disputes & Audits":
                             unsafe_allow_html=True,
                         )
 
-            # Keep the existing current-close audit report available as well,
-            # but ONLY if there are no historical audit reports for the
-            # currently selected environment.
             if (
                 st.session_state.results is not None
                 and st.session_state.audit_df is not None

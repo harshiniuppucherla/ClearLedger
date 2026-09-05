@@ -195,6 +195,16 @@ def validate_and_normalize(
             f"No data supplied for {source}"
         )
 
+    if not isinstance(df, pd.DataFrame):
+        raise ValueError(
+            f"Invalid data format for {source}"
+        )
+
+    if df.empty:
+        raise ValueError(
+            f"The {source} file contains no financial records."
+        )
+
     normalized = df.copy()
 
     normalized.columns = [
@@ -233,6 +243,39 @@ def validate_and_normalize(
             discarded,
         )
 
+    # Validate that required columns actually contain usable information.
+    # A column existing but being completely blank is treated as missing
+    # information and therefore blocks financial close.
+    blank_required = []
+
+    for column in required:
+
+        if column not in normalized.columns:
+            continue
+
+        values = normalized[column]
+
+        if values.isna().all():
+            blank_required.append(column)
+            continue
+
+        non_blank = (
+            values
+            .fillna("")
+            .astype(str)
+            .str.strip()
+        )
+
+        if (non_blank == "").all():
+            blank_required.append(column)
+
+    if blank_required:
+        return (
+            normalized,
+            blank_required,
+            discarded,
+        )
+
     numeric_by_source = {
 
         "razorpay": [
@@ -257,7 +300,19 @@ def validate_and_normalize(
         normalized[column] = pd.to_numeric(
             normalized[column],
             errors="coerce",
-        ).fillna(0.0)
+        )
+
+        # If a required numeric field contains only invalid/blank values,
+        # the source is not reliable enough for financial close.
+        if normalized[column].isna().all():
+
+            return (
+                normalized,
+                [column],
+                discarded,
+            )
+
+        normalized[column] = normalized[column].fillna(0.0)
 
     for column in normalized.columns:
 
@@ -269,6 +324,45 @@ def validate_and_normalize(
                 .astype(str)
                 .str.strip()
             )
+
+    # Validate again after normalization so a source with only blank
+    # required values cannot proceed to financial close.
+    blank_required_after_normalization = []
+
+    for column in required:
+
+        if column not in normalized.columns:
+            blank_required_after_normalization.append(
+                column
+            )
+            continue
+
+        if column in numeric_by_source[source]:
+
+            if normalized[column].isna().all():
+                blank_required_after_normalization.append(
+                    column
+                )
+
+        else:
+
+            if (
+                normalized[column]
+                .astype(str)
+                .str.strip()
+                .eq("")
+                .all()
+            ):
+                blank_required_after_normalization.append(
+                    column
+                )
+
+    if blank_required_after_normalization:
+        return (
+            normalized,
+            blank_required_after_normalization,
+            discarded,
+        )
 
     return (
         normalized,
@@ -983,4 +1077,3 @@ def build_audit_report(
     return results[
         "audit_df"
     ].copy()
-
