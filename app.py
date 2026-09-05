@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 from datetime import datetime
+from time import perf_counter
 
 from reconciliation import (
     REQUIRED_COLUMNS,
@@ -129,6 +130,9 @@ st.markdown(
         font-size: 12px;
         font-weight: 600;
         margin-bottom: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .metric-value {
@@ -272,6 +276,7 @@ DEFAULTS = {
     "dispute_drafts": {},
     "audit_df": None,
     "last_run": None,
+    "processing_time_seconds": None,
     "uploaded_files_audit": [],
     "uploaded_file_signatures": set(),
     "reviewed_disputes": [],
@@ -299,6 +304,7 @@ def clear_financial_data():
     st.session_state.dispute_drafts = {}
     st.session_state.audit_df = None
     st.session_state.last_run = None
+    st.session_state.processing_time_seconds = None
 
     st.session_state.upload_validation = {
         "razorpay": False,
@@ -333,6 +339,7 @@ def load_demo_data():
     st.session_state.dispute_drafts = {}
     st.session_state.audit_df = None
     st.session_state.last_run = None
+    st.session_state.processing_time_seconds = None
 
 
 def record_uploaded_file(
@@ -745,6 +752,40 @@ if page == "Dashboard":
 
         st.markdown("<br>", unsafe_allow_html=True)
 
+        amount_cols = st.columns(3)
+
+        with amount_cols[0]:
+            metric(
+                "Amount Reconciled",
+                f"₹{r['amount_reconciled']:,.2f}",
+                "Matched and auto-resolved",
+            )
+
+        with amount_cols[1]:
+            metric(
+                "Amount in Dispute",
+                f"₹{r['amount_in_dispute']:,.2f}",
+                "Unresolved financial difference",
+            )
+
+        with amount_cols[2]:
+            processing_seconds = r.get(
+                "processing_time_seconds",
+                st.session_state.processing_time_seconds,
+            )
+            processing_display = (
+                f"{processing_seconds:.3f} s"
+                if processing_seconds is not None
+                else "-"
+            )
+            metric(
+                "Processing Time",
+                processing_display,
+                "Measured during financial close",
+            )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
         st.subheader("Reconciliation Outcome")
 
         exceptions_df = r["exceptions_df"]
@@ -840,6 +881,13 @@ if page == "Dashboard":
 
             st.altair_chart(
                 chart,
+                use_container_width=True,
+            )
+
+            st.caption("Exception Breakdown — actual counts from the reconciliation engine")
+            st.dataframe(
+                exception_chart_df,
+                hide_index=True,
                 use_container_width=True,
             )
 
@@ -1297,11 +1345,16 @@ elif page == "Upload & Close":
 
                 try:
 
+                    processing_start = perf_counter()
+
                     results = run_reconciliation(
                         st.session_state.razorpay_df,
                         st.session_state.bank_df,
                         st.session_state.ledger_df,
                     )
+
+                    processing_time_seconds = perf_counter() - processing_start
+                    results["processing_time_seconds"] = processing_time_seconds
 
                     close_time = datetime.now().strftime(
                         "%Y-%m-%d %H:%M:%S"
@@ -1316,6 +1369,7 @@ elif page == "Upload & Close":
                     st.session_state.audit_df = audit_df
 
                     st.session_state.last_run = close_time
+                    st.session_state.processing_time_seconds = processing_time_seconds
 
                     # Store the audit with an explicit data source.
                     #
@@ -1337,6 +1391,7 @@ elif page == "Upload & Close":
                             "close_time": close_time,
                             "audit_df": audit_df.copy(),
                             "data_source": audit_source,
+                            "processing_time_seconds": processing_time_seconds,
                         }
                     )
 
