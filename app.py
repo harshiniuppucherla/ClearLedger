@@ -941,7 +941,7 @@ elif page == "Upload & Close":
 
             razorpay_file = st.file_uploader(
                 "Razorpay Settlement File",
-                type=["pdf", "xlsx", "xls"],
+                type=["csv","pdf", "xlsx", "xls"],
                 key="razorpay_upload",
             )
 
