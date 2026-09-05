@@ -928,7 +928,7 @@ elif page == "Upload & Close":
 
         st.info(
             "Demo Data is currently enabled. Turn it off from the sidebar "
-            "to upload your own PDF or Excel files."
+            "to upload your own CSV,PDF or Excel files."
         )
 
     else:
@@ -997,7 +997,7 @@ elif page == "Upload & Close":
 
             bank_file = st.file_uploader(
                 "Bank Statement File",
-                type=["pdf", "xlsx", "xls"],
+                type=["csv","pdf", "xlsx", "xls"],
                 key="bank_upload",
             )
 
@@ -1053,7 +1053,7 @@ elif page == "Upload & Close":
 
             ledger_file = st.file_uploader(
                 "Merchant Ledger File",
-                type=["pdf", "xlsx", "xls"],
+                type=["csv","pdf", "xlsx", "xls"],
                 key="ledger_upload",
             )
 

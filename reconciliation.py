@@ -49,6 +49,9 @@ def read_uploaded_file(
 
     uploaded_file.seek(0)
 
+    if file_name.endswith(".csv"):
+        return pd.read_csv(uploaded_file)
+
     if file_name.endswith(
         ".xlsx"
     ) or file_name.endswith(
@@ -69,7 +72,7 @@ def read_uploaded_file(
 
     raise ValueError(
         "Unsupported file format. "
-        "Please upload a PDF or Excel file."
+        "Please upload a CSV,PDF or Excel file."
     )
 
 
