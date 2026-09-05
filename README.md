@@ -753,7 +753,7 @@ It is not financial, accounting, legal, or compliance advice and should not be u
 
 ## Upload & Close
 
-![Upload & Close](images/upload & close.png)
+![Upload & Close](images/upload&close.png)
 
 ## Exceptions
 
@@ -765,4 +765,4 @@ It is not financial, accounting, legal, or compliance advice and should not be u
 
 ## Dispute and Audit
 
-![Dispute Evidence Builder and Audit report](images/disputes and audit.png)
+![Dispute Evidence Builder and Audit report](images/disputes&audits.png)
